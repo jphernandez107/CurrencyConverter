@@ -35,12 +35,12 @@ class HistoryViewModel  @Inject constructor(
             }
         }
     }
-
-    private fun CurrencyConversion.toHistoryItem() = HistoryViewState.Success.HistoryItem(
-        id = id,
-        title = "$from a $to",
-        summary = "${amount.formattedWithCurrency(from)} ➡ ${result.amount.formattedWithCurrency(result.currency)}",
-        rate = rate.moneyFormat(),
-        timestamp = timestamp.formatToString(),
-    )
 }
+
+fun CurrencyConversion.toHistoryItem() = HistoryViewState.Success.HistoryItem(
+    id = id,
+    title = "$from a $to",
+    summary = "${amount.formattedWithCurrency(from)} ➡ ${result.amount.formattedWithCurrency(result.currency)}",
+    rate = rate.moneyFormat(),
+    timestamp = timestamp.formatToString(),
+)

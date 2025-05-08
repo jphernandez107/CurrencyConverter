@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
@@ -38,6 +40,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.juan.domain.value.Currency
 import com.juan.ui.model.CurrencyState
 import com.juan.ui.model.toCurrencyState
+import com.juan.ui.screen.history.HistoryItem
+import com.juan.ui.screen.history.HistoryViewState
 
 @Composable
 fun ConvertScreen(
@@ -49,29 +53,36 @@ fun ConvertScreen(
         viewState = viewState,
         onEvent = { viewModel.onEvent(it) },
         onHistoryButtonClick = onHistoryButtonClick,
+        recentConversionsViewState = viewModel.recentConversionsViewState.collectAsState().value,
     )
 }
 
 @Composable
 private fun Convert(
     viewState: ConvertViewState,
+    recentConversionsViewState: HistoryViewState,
     onEvent: (ConvertUIEvent) -> Unit,
     onHistoryButtonClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp),
+            .padding(horizontal = 24.dp)
+            .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        ConvertSection(viewState, onEvent)
+        ConvertSection(
+            viewState = viewState,
+            onEvent= onEvent,
+            recentConversionsViewState = recentConversionsViewState,
+        )
 
         Button(
             enabled = viewState !is ConvertViewState.Loading,
             onClick = onHistoryButtonClick,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 48.dp)
+                .padding(bottom = 48.dp, top = 36.dp)
         ) {
             Text(
                 text = "Historial de conversiones",
@@ -84,6 +95,7 @@ private fun Convert(
 @Composable
 private fun ConvertSection(
     viewState: ConvertViewState,
+    recentConversionsViewState: HistoryViewState,
     onEvent: (ConvertUIEvent) -> Unit,
 ) {
     Column(
@@ -152,6 +164,59 @@ private fun ConvertSection(
                 viewState = viewState,
                 onClick = { onEvent(ConvertUIEvent.OnConvertClick) },
             )
+        }
+        RecentConversions(
+            recentConversionsViewState = recentConversionsViewState,
+        )
+    }
+}
+
+@Composable
+private fun RecentConversions(
+    recentConversionsViewState: HistoryViewState,
+) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+    ) {
+        Text(
+            text = "Conversiones recientes",
+            style = MaterialTheme.typography.headlineSmall,
+        )
+        when (recentConversionsViewState) {
+            is HistoryViewState.Loading -> {
+                Box(
+                    modifier = Modifier.fillMaxWidth(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier
+                            .size(48.dp)
+                    )
+                }
+            }
+
+            is HistoryViewState.Empty -> {
+                Text(
+                    text = "No hay conversiones recientes",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+
+            is HistoryViewState.Success -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    recentConversionsViewState.history.forEach { historyItem ->
+                        HistoryItem(
+                            historyItem = historyItem,
+                            onItemClick = { },
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -241,6 +306,24 @@ internal fun ConvertScreenPreview() {
             ),
             onEvent = {  },
             onHistoryButtonClick = { },
+            recentConversionsViewState = HistoryViewState.Success(
+                history = listOf(
+                    HistoryViewState.Success.HistoryItem(
+                        id = 1,
+                        title = "USD a EUR",
+                        summary = "100 USD ➡ 85 EUR",
+                        rate = "0.85",
+                        timestamp = "24-10-2023 12:00:00",
+                    ),
+                    HistoryViewState.Success.HistoryItem(
+                        id = 2,
+                        title = "EUR a USD",
+                        summary = "100 EUR ➡ 120 USD",
+                        rate = "1.2",
+                        timestamp = "23-10-2023 12:00:00",
+                    ),
+                )
+            ),
         )
     }
 }

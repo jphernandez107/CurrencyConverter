@@ -32,20 +32,22 @@ fun HistoryScreen(
             HistoryList(
                 historyItems = state.history,
                 onItemClick = onItemClick,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp)
             )
         }
     }
 }
 
 @Composable
-private fun HistoryList(
+fun HistoryList(
     historyItems: List<HistoryViewState.Success.HistoryItem>,
+    modifier: Modifier = Modifier,
     onItemClick: (Long) -> Unit = {},
 ) {
     LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+        modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(
             bottom = 16.dp,
