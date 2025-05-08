@@ -1,5 +1,10 @@
 package com.juan.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
@@ -49,17 +54,63 @@ fun NavGraph(
             startDestination = Screen.Convert.route,
             modifier = Modifier.padding(innerPadding)
         ) {
-            composable(Screen.Convert.route) {
+            composable(
+                route = Screen.Convert.route,
+            ) {
                 ConvertScreen(
-                    navController = navController,
+                    onHistoryButtonClick = {
+                        navController.navigate(Screen.History.route)
+                    }
                 )
             }
-            composable(Screen.History.route) {
+            composable(
+                route = Screen.History.route,
+                enterTransition = {
+                    slideInVertically(
+                        animationSpec = tween(500),
+                        initialOffsetY = { it },
+                    )
+                },
+                exitTransition = {
+                    slideOutHorizontally(
+                        animationSpec = tween(500),
+                        targetOffsetX = { -it },
+                    )
+                },
+                popEnterTransition = {
+                    slideInHorizontally(
+                        animationSpec = tween(500),
+                        initialOffsetX = { -it },
+                    )
+                },
+                popExitTransition = {
+                    slideOutVertically(
+                        animationSpec = tween(500),
+                        targetOffsetY = { it },
+                    )
+                },
+            ) {
                 HistoryScreen(
-                    navController = navController,
+                    onItemClick = { id ->
+                        navController.navigate(Screen.Details.createRoute(id.toString()))
+                    }
                 )
             }
-            composable(Screen.Details.route) { navBackStackEntry ->
+            composable(
+                route = Screen.Details.route,
+                enterTransition = {
+                    slideInHorizontally(
+                        animationSpec = tween(500),
+                        initialOffsetX = { it },
+                    )
+                },
+                popExitTransition = {
+                    slideOutHorizontally(
+                        animationSpec = tween(500),
+                        targetOffsetX = { it },
+                    )
+                },
+            ) { navBackStackEntry ->
                 val id = navBackStackEntry.arguments?.getString(DetailsViewModel.CONVERSION_ID_KEY)?.toLongOrNull()
                 id?.let {
                     DetailsScreen()

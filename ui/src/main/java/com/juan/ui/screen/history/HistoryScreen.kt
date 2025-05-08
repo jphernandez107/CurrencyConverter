@@ -1,17 +1,12 @@
 package com.juan.ui.screen.history
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,13 +18,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
-import com.juan.ui.navigation.Screen
 
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel(),
-    navController: NavController,
+    onItemClick: (Long) -> Unit,
 ) {
     val viewState by viewModel.viewState.collectAsState()
     when (val state = viewState) {
@@ -38,9 +31,7 @@ fun HistoryScreen(
         is HistoryViewState.Success -> {
             HistoryList(
                 historyItems = state.history,
-                onItemClick = { id ->
-                    navController.navigate(Screen.Details.createRoute(id.toString()))
-                }
+                onItemClick = onItemClick,
             )
         }
     }
@@ -64,48 +55,6 @@ private fun HistoryList(
             HistoryItem(
                 historyItem = historyItem,
                 onItemClick = onItemClick,
-            )
-        }
-    }
-}
-
-@Composable
-private fun HistoryItem(
-    historyItem: HistoryViewState.Success.HistoryItem,
-    onItemClick: (Long) -> Unit,
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onItemClick(historyItem.id)
-            },
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = historyItem.title,
-                    style = MaterialTheme.typography.headlineSmall,
-                )
-                Text(
-                    text = historyItem.rate,
-                    style = MaterialTheme.typography.bodyMedium,
-                )
-            }
-            Text(
-                text = historyItem.summary,
-                style = MaterialTheme.typography.bodyMedium,
-            )
-            Text(
-                text = historyItem.timestamp,
-                modifier = Modifier.padding(top = 8.dp),
-                style = MaterialTheme.typography.bodySmall,
             )
         }
     }

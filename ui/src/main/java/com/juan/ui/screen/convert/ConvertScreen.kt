@@ -9,10 +9,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -32,24 +35,20 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.juan.domain.value.Currency
 import com.juan.ui.model.CurrencyState
 import com.juan.ui.model.toCurrencyState
-import com.juan.ui.navigation.Screen
 
 @Composable
 fun ConvertScreen(
     viewModel: ConvertViewModel = hiltViewModel(),
-    navController: NavController,
+    onHistoryButtonClick: () -> Unit
 ) {
     val viewState by viewModel.viewState.collectAsState()
     Convert(
         viewState = viewState,
         onEvent = { viewModel.onEvent(it) },
-        onHistoryButtonClick = {
-            navController.navigate(Screen.History.route)
-        },
+        onHistoryButtonClick = onHistoryButtonClick,
     )
 }
 
@@ -63,6 +62,33 @@ private fun Convert(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        ConvertSection(viewState, onEvent)
+
+        Button(
+            enabled = viewState !is ConvertViewState.Loading,
+            onClick = onHistoryButtonClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 48.dp)
+        ) {
+            Text(
+                text = "Historial de conversiones",
+                style = MaterialTheme.typography.bodyMedium,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ConvertSection(
+    viewState: ConvertViewState,
+    onEvent: (ConvertUIEvent) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         OutlinedTextField(
@@ -110,6 +136,7 @@ private fun Convert(
                             style = MaterialTheme.typography.bodyMedium,
                         )
                     }
+
                     is ConvertViewState.ConversionResult.Failure -> {
                         Text(
                             text = "Error: ${viewState.error}",
@@ -126,18 +153,6 @@ private fun Convert(
                 onClick = { onEvent(ConvertUIEvent.OnConvertClick) },
             )
         }
-
-
-        Button(
-            enabled = viewState !is ConvertViewState.Loading,
-            onClick = onHistoryButtonClick,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text(
-                text = "Historial de conversiones",
-                style = MaterialTheme.typography.bodyMedium,
-            )
-        }
     }
 }
 
@@ -152,12 +167,14 @@ private fun ConvertButton(
     Button(
         onClick = onClick,
         enabled = enabled,
-        modifier = modifier,
+        modifier = modifier.widthIn(min = 120.dp),
     ) {
         when (viewState) {
             is ConvertViewState.Convert -> Text("Convertir")
             is ConvertViewState.ConversionResult -> Text("Convertir")
-            is ConvertViewState.Loading -> Text("Cargando...")
+            is ConvertViewState.Loading -> CircularProgressIndicator(
+                modifier = Modifier.size(24.dp),
+            )
             is ConvertViewState.Error -> Text("Convertir")
         }
     }
