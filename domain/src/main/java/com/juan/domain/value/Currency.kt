@@ -10,7 +10,9 @@ enum class Currency(val code: String, val symbol: String) {
     CAD("CAD", "C$"),
     CHF("CHF", "CHF"),
     CNY("CNY", "¥"),
-    INR("INR", "₹");
+    INR("INR", "₹"),
+    PPP("Error", "For testing"),
+    ;
 
     companion object {
         fun fromCode(code: String): Currency = entries.find { it.code == code } ?: USD
